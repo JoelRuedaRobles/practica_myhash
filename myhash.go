@@ -34,11 +34,18 @@ func main() {
 		panic(err)
 	}
 
-	makeMirrorMatrix(claveHex)
+	matriz, orden := makeMirrorMatrix(claveHex)
+	nuevaClave, err := strconv.ParseInt(makeHash(matriz, orden), 16, 64)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Nueva Clave: \033[32m%s\033[0m\n", makeHash(matriz, orden))
+	fmt.Printf("Nueva Clave: \033[32m%d\033[0m\n", nuevaClave)
 
 	fmt.Println(claveHex)
 	fmt.Println(decodeClaveHex)
-
 }
 
 func filtro(hexKey string) string {
@@ -62,7 +69,7 @@ func filtro(hexKey string) string {
 	*	hasta que tenga las letras suficientes (por lo menos 5)
 	 */
 	for {
-		if letras < 6 || letras == len(hexKey) {
+		if letras < factor || letras == len(hexKey) {
 
 			letras = 0 // Cuenta la cantidad de letras que hay en dinamicHexKey
 
@@ -92,18 +99,20 @@ func filtro(hexKey string) string {
 	}
 	//*/
 	if len(dinamicHexKey)%2 != 0 {
-		dinamicHexKey += "a"
+		dinamicHexKey += "0"
 	}
 	//*/
+
+	fmt.Println("HexKey:", dinamicHexKey)
 
 	return dinamicHexKey
 }
 
-func makeMirrorMatrix(hexKey string) {
+func makeMirrorMatrix(hexKey string) (mirrorMatrix [][]byte, orden int) {
 
 	//keyByte := []byte(hexKey)
 	//var matriz [][]byte // Matriz de slice de bytes
-	dim := 2 // Orden de la matriz
+	dim := 1 // Orden de la matriz
 
 	/*
 	*	Ciclo que determinara de cuanto sera el orden de la matriz
@@ -120,12 +129,31 @@ func makeMirrorMatrix(hexKey string) {
 	*	Se aumenta el orden para que halla espacio para
 	*	almacenar todos los caracteres de hexKey en la matriz central
 	 */
-	dim++
-
+	/*
+		if math.Pow(float64(dim), float64(dim)) < float64(len(hexKey)) {
+			dim++
+		}
+	*/
 	/*
 	*	Dira cuantos caracteres hara falta para completar la matriz
 	 */
 	faltantes := ((dim) * (dim)) - len(hexKey)
+
+	/*
+	*	Aqui se llena los espacios vacios
+	*	de la matrzi central
+	 */
+
+	for {
+		if faltantes > 0 {
+			//hexKey += hexKey[0 : faltantes-2]
+			hexKey += "0"
+			faltantes--
+			fmt.Println("Faltantes añadidos", hexKey)
+		} else {
+			break
+		}
+	}
 
 	/*
 	*	Se aumentan 2 unidades a `dim` para la matriz espejo
@@ -146,16 +174,6 @@ func makeMirrorMatrix(hexKey string) {
 		}
 
 		matriz = append(matriz, slice)
-	}
-
-	/*
-	*	Aqui se llena los espacios vacios
-	*	de la matrzi central
-	 */
-
-	if faltantes > 0 {
-		hexKey += hexKey[0:faltantes]
-		fmt.Println("Faltantes añadidos", hexKey[0:faltantes])
 	}
 
 	/*
@@ -214,4 +232,51 @@ func makeMirrorMatrix(hexKey string) {
 	fmt.Println("Faltantes:", faltantes)
 	fmt.Println(matriz)
 
+	return matriz, dim
+}
+
+func makeHash(mirrorMatrix [][]byte, orderMatrix int) string {
+
+	var nuevaKey []byte
+	flag := false // Variable que cambia la orientacion
+
+	for i := 1; i <= orderMatrix; i++ {
+		for j := 1; j <= orderMatrix; j++ {
+
+			switch mirrorMatrix[i][j] {
+
+			case 97: // Caracter `a`
+				if flag == false {
+					nuevaKey = append(nuevaKey, mirrorMatrix[i-1][j])
+				} else {
+					nuevaKey = append(nuevaKey, mirrorMatrix[i-1][j-1])
+				}
+			case 98: // Caracter `b`
+				if flag == false {
+					nuevaKey = append(nuevaKey, mirrorMatrix[i][j+1])
+				} else {
+					nuevaKey = append(nuevaKey, mirrorMatrix[i-1][j+1])
+				}
+			case 99: // Caracter `c`
+				nuevaKey = append(nuevaKey, 99)
+			case 100: // Caracter `d`
+				if flag == false {
+					nuevaKey = append(nuevaKey, mirrorMatrix[i+1][j])
+				} else {
+					nuevaKey = append(nuevaKey, mirrorMatrix[i+1][j+1])
+				}
+			case 101: // Caracter `e`
+				if flag == false {
+					nuevaKey = append(nuevaKey, mirrorMatrix[i][j-1])
+				} else {
+					nuevaKey = append(nuevaKey, mirrorMatrix[i+1][j-1])
+				}
+			case 102: // Caracter `f`
+				nuevaKey = append(nuevaKey, 102)
+				flag = !flag
+			}
+		}
+	}
+
+	return string(nuevaKey)
 }

@@ -298,7 +298,21 @@ func makeHash(mirrorMatrix [][]byte, orderMatrix int) string {
 					nuevaKey = append(nuevaKey, mirrorMatrix[i-1][j+1])
 				}
 			case 99: // Caracter `c`
-				nuevaKey = append(nuevaKey, 99)
+				//nuevaKey = append(nuevaKey, 99)
+
+				aux := 0
+
+				if flag == false {
+					aux += int(mirrorMatrix[i-1][j+1]) // `b` cuando flag == true
+					aux += int(mirrorMatrix[i+1][j-1]) // `e` cuando flag == true
+				} else {
+					aux += int(mirrorMatrix[i-1][j]) // `a` cuando flag == false
+					aux += int(mirrorMatrix[i+1][j]) // `d` cuando flag == false
+				}
+
+				nuevaKey = append(nuevaKey, byte(aux%255)) // Modulo para no exceder el tamaño de byte
+				flag = !flag
+
 			case 100: // Caracter `d`
 				if flag == false {
 					nuevaKey = append(nuevaKey, mirrorMatrix[i+1][j])
@@ -312,7 +326,20 @@ func makeHash(mirrorMatrix [][]byte, orderMatrix int) string {
 					nuevaKey = append(nuevaKey, mirrorMatrix[i+1][j-1])
 				}
 			case 102: // Caracter `f`
-				nuevaKey = append(nuevaKey, 102)
+				//nuevaKey = append(nuevaKey, 102)
+				//flag = !flag
+
+				aux := 0
+
+				if flag == false {
+					aux += int(mirrorMatrix[i-1][j-1]) // `a` cuando flag == true
+					aux += int(mirrorMatrix[i+1][j+1]) // `d` cuando flag == true
+				} else {
+					aux += int(mirrorMatrix[i][j-1]) // `e` cuando flag == false
+					aux += int(mirrorMatrix[i][j+1]) // `b` cuando flag == false
+				}
+
+				nuevaKey = append(nuevaKey, byte(aux%255)) // Modulo para no exceder el tamaño de byte
 				flag = !flag
 			}
 		}

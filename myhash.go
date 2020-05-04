@@ -51,8 +51,8 @@ func main() {
 	}
 	//*/
 
-	fmt.Printf("Nueva Clave en Bytes: \033[32m%s\033[0m\n", makeHash(matriz, orden))
-	fmt.Printf("Nueva Clave en Hexadecimal: \033[32m%d\033[0m\n", nuevaClave)
+	fmt.Printf("Nueva Clave en Hexadecimal: \033[32m%s\033[0m\n", makeHash(matriz, orden))
+	fmt.Printf("Nueva Clave Entera: \033[32m%d\033[0m\n", nuevaClave)
 
 }
 

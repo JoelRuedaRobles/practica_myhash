@@ -45,9 +45,11 @@ func main() {
 	matriz, orden := makeMirrorMatrix(claveHex)
 	nuevaClave, err := strconv.ParseInt(makeHash(matriz, orden), 16, 64)
 
+	//*/
 	if err != nil {
 		panic(err)
 	}
+	//*/
 
 	fmt.Printf("Nueva Clave en Bytes: \033[32m%s\033[0m\n", makeHash(matriz, orden))
 	fmt.Printf("Nueva Clave en Hexadecimal: \033[32m%d\033[0m\n", nuevaClave)
@@ -310,7 +312,10 @@ func makeHash(mirrorMatrix [][]byte, orderMatrix int) string {
 					aux += int(mirrorMatrix[i+1][j]) // `d` cuando flag == false
 				}
 
-				nuevaKey = append(nuevaKey, byte(aux%255)) // Modulo para no exceder el tamaño de byte
+				/*
+				*	Aqui convierto la suma en uno de los caracteres de la `a` ... `f`
+				 */
+				nuevaKey = append(nuevaKey, byte((aux%6)+97))
 				flag = !flag
 
 			case 100: // Caracter `d`
@@ -339,7 +344,10 @@ func makeHash(mirrorMatrix [][]byte, orderMatrix int) string {
 					aux += int(mirrorMatrix[i][j+1]) // `b` cuando flag == false
 				}
 
-				nuevaKey = append(nuevaKey, byte(aux%255)) // Modulo para no exceder el tamaño de byte
+				/*
+				*	Aqui convierto la suma en uno de los caracteres de la `a` ... `f`
+				 */
+				nuevaKey = append(nuevaKey, byte((aux%6)+97))
 				flag = !flag
 			}
 		}

@@ -113,6 +113,11 @@ func filtro(hexKey string) string {
 	}
 	//*/
 
+	//*/ Impresion de datos
+	fmt.Println("Minimas letras permitidas: \033[35m", minimasLetras, "\033[0m")
+
+	//*/
+
 	return dinamicHexKey
 }
 
@@ -263,9 +268,9 @@ func makeMirrorMatrix(hexKey string) (mirrorMatrix [][]byte, orden int) {
 			//fmt.Printf("%s ", string(matriz[i][j]))
 
 			if i != 0 && i != dim+1 && j != 0 && j != dim+1 {
-				fmt.Printf("\033[1;32m%s\t\033[0m", string(matriz[i][j]))
+				fmt.Printf("\033[1;32m%s  \033[0m", string(matriz[i][j]))
 			} else {
-				fmt.Printf("\033[34m%s\t\033[0m", string(matriz[i][j]))
+				fmt.Printf("\033[34m%s  \033[0m", string(matriz[i][j]))
 			}
 		}
 		fmt.Println()

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 )
@@ -13,7 +12,7 @@ func main() {
 	var claveByte []byte
 	var clave string
 
-	fmt.Println("Ingresa la contraseña")
+	fmt.Print("Ingresa la contraseña: ")
 	fmt.Scanln(&clave)
 
 	/*
@@ -21,18 +20,27 @@ func main() {
 	*	a 8 retorna false
 	 */
 	if len(clave) < 8 {
+		fmt.Println("\033[31mLa contraseña debe tener al menos 8 caracteres")
+
 		return
 	}
 
 	claveByte = []byte(clave)
 	claveHex = hex.EncodeToString(claveByte)
 
-	claveHex = filtro(claveHex)
-	decodeClaveHex, err := hex.DecodeString(claveHex)
+	//*/ Impresion de datos
 
-	if err != nil {
-		panic(err)
-	}
+	fmt.Println("\nClave: \033[35m", clave, "\033[0m")
+	fmt.Println("Clave en bytes: \033[35m", claveByte, "\033[0m")
+	fmt.Println("Clave en hexadecimal: \033[35m", claveHex, "\033[0m")
+
+	//*/
+
+	claveHex = filtro(claveHex)
+
+	//*/ Impresion de datos
+
+	fmt.Println("Clave en hexadecimal con filtro: \033[35m", claveHex, "\033[0m")
 
 	matriz, orden := makeMirrorMatrix(claveHex)
 	nuevaClave, err := strconv.ParseInt(makeHash(matriz, orden), 16, 64)
@@ -41,11 +49,9 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("Nueva Clave: \033[32m%s\033[0m\n", makeHash(matriz, orden))
-	fmt.Printf("Nueva Clave: \033[32m%d\033[0m\n", nuevaClave)
+	fmt.Printf("Nueva Clave en Bytes: \033[32m%s\033[0m\n", makeHash(matriz, orden))
+	fmt.Printf("Nueva Clave en Hexadecimal: \033[32m%d\033[0m\n", nuevaClave)
 
-	fmt.Println(claveHex)
-	fmt.Println(decodeClaveHex)
 }
 
 func filtro(hexKey string) string {
@@ -55,6 +61,7 @@ func filtro(hexKey string) string {
 	keyInt := 0               // Valor de la sumatoria total de cada caracter de la cadena hexKey
 	factor := 3               // Numero caotico
 	dinamicHexKey := hexKey   // Copia de la variable hexKey que cambiara su valor en caso de ser necesario
+	minimasLetras := 4        // Minomo de letras permitidos en la cadena hexKey
 
 	/*
 	*	Busca las letras que hay en la
@@ -69,7 +76,7 @@ func filtro(hexKey string) string {
 	*	hasta que tenga las letras suficientes (por lo menos 5)
 	 */
 	for {
-		if letras < factor || letras == len(hexKey) {
+		if letras < minimasLetras || letras == len(hexKey) {
 
 			letras = 0 // Cuenta la cantidad de letras que hay en dinamicHexKey
 
@@ -97,13 +104,12 @@ func filtro(hexKey string) string {
 			break
 		}
 	}
+
 	//*/
 	if len(dinamicHexKey)%2 != 0 {
 		dinamicHexKey += "0"
 	}
 	//*/
-
-	fmt.Println("HexKey:", dinamicHexKey)
 
 	return dinamicHexKey
 }
@@ -118,7 +124,7 @@ func makeMirrorMatrix(hexKey string) (mirrorMatrix [][]byte, orden int) {
 	*	Ciclo que determinara de cuanto sera el orden de la matriz
 	 */
 	for {
-		if math.Pow(float64(dim), float64(dim)) < float64(len(hexKey)) {
+		if (dim * dim) < len(hexKey) {
 			dim++
 		} else {
 			break
@@ -137,7 +143,7 @@ func makeMirrorMatrix(hexKey string) (mirrorMatrix [][]byte, orden int) {
 	/*
 	*	Dira cuantos caracteres hara falta para completar la matriz
 	 */
-	faltantes := ((dim) * (dim)) - len(hexKey)
+	faltantes := (dim * dim) - len(hexKey)
 
 	/*
 	*	Aqui se llena los espacios vacios
@@ -147,9 +153,8 @@ func makeMirrorMatrix(hexKey string) (mirrorMatrix [][]byte, orden int) {
 	for {
 		if faltantes > 0 {
 			//hexKey += hexKey[0 : faltantes-2]
-			hexKey += "0"
+			hexKey += string(hexKey[faltantes-1])
 			faltantes--
-			fmt.Println("Faltantes añadidos", hexKey)
 		} else {
 			break
 		}
@@ -216,12 +221,28 @@ func makeMirrorMatrix(hexKey string) (mirrorMatrix [][]byte, orden int) {
 	matriz[0][dim+1] = matriz[dim][1]
 	matriz[dim+1][dim+1] = matriz[1][1]
 
+	//*/ Impresion de datos
+
+	fmt.Println("Clave en hexadecimal completa: \033[35m", hexKey, "\033[0m")
+	fmt.Println("Orden de la matriz central: \033[35m", dim, "\033[0m")
+
+	//*/
+
 	//*/ Impresion de matriz espejo
-	fmt.Println("\033[33m")
+	fmt.Println("\033[0m", "\n\t\t.: Matriz Espejo en Bytes:.")
+	fmt.Println("\033[34m")
 
 	for i := 0; i < dim+2; i++ {
+		fmt.Print("\t")
 		for j := 0; j < dim+2; j++ {
-			fmt.Printf("%d ", matriz[i][j])
+
+			//fmt.Printf("%d\t", matriz[i][j])
+
+			if i != 0 && i != dim+1 && j != 0 && j != dim+1 {
+				fmt.Printf("\033[1;32m%d\t\033[0m", matriz[i][j])
+			} else {
+				fmt.Printf("\033[34m%d\t\033[0m", matriz[i][j])
+			}
 		}
 		fmt.Println()
 	}
@@ -229,8 +250,27 @@ func makeMirrorMatrix(hexKey string) (mirrorMatrix [][]byte, orden int) {
 	fmt.Println("\033[0m")
 	//*/
 
-	fmt.Println("Faltantes:", faltantes)
-	fmt.Println(matriz)
+	//*/ Impresion de matriz espejo
+	fmt.Println("\033[0m", "\n\t\t.: Matriz Espejo en Hexadecimal :.")
+	fmt.Println("\033[34m")
+
+	for i := 0; i < dim+2; i++ {
+		fmt.Print("\t")
+		for j := 0; j < dim+2; j++ {
+
+			//fmt.Printf("%s ", string(matriz[i][j]))
+
+			if i != 0 && i != dim+1 && j != 0 && j != dim+1 {
+				fmt.Printf("\033[1;32m%s\t\033[0m", string(matriz[i][j]))
+			} else {
+				fmt.Printf("\033[34m%s\t\033[0m", string(matriz[i][j]))
+			}
+		}
+		fmt.Println()
+	}
+
+	fmt.Println("\033[0m")
+	//*/
 
 	return matriz, dim
 }
